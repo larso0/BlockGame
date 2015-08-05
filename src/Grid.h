@@ -9,19 +9,10 @@
 #define GRID_H_
 
 #include "Block.h"
-#include <stdlib.h>
 
-typedef struct _GridNode
-{
-    Block block;
-    struct _GridNode* left;
-    struct _GridNode* right;
-} GridNode;
+struct _Grid;
 
-typedef struct
-{
-    GridNode* root;
-} Grid;
+typedef struct _Grid Grid;
 
 Grid* CreateGrid();
 void DestroyGrid(Grid* grid);

@@ -6,7 +6,20 @@
  */
 
 #include "Grid.h"
+#include <stdlib.h>
 #include <stdbool.h>
+
+typedef struct _GridNode
+{
+    Block block;
+    struct _GridNode* left;
+    struct _GridNode* right;
+} GridNode;
+
+struct _Grid
+{
+    GridNode* root;
+};
 
 bool PointLessThan(int ax, int ay, int bx, int by)
 {
@@ -143,7 +156,7 @@ Block* GetBlock(Grid* grid, int x, int y)
         {
             if(PointEquals(x, y, tmp->block.x, tmp->block.y))
             {
-                block = tmp;
+                block = &tmp->block;
                 tmp = NULL;
             }
             else if(PointLessThan(x, y, tmp->block.x, tmp->block.y))
