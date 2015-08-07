@@ -51,4 +51,6 @@ int main(int argc, char** argv)
     ForEachBlock(grid, &PrintBlock, NULL);
 
     DestroyGrid(grid);
+
+    return 0;
 }
