@@ -23,7 +23,7 @@ typedef enum
     ORE_IRON,
 
     WATER,
-    WATER_FALLING_1, WATER_FALLING_2,
+    WATER_FALLING,
 
     ICE,
     ICE_SURFACE, ICE_SURFACE_SNOW,
