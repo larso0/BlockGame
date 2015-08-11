@@ -85,6 +85,7 @@ int main(int argc, char** argv)
 				AddBlock(world, &cursor_block);
 				break;
 			case SDL_BUTTON_RIGHT:
+			case SDL_BUTTON_RMASK:
 				RemoveBlock(world, cursor_block.x, cursor_block.y);
 				break;
 			}
