@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 			if(mouse_state == SDL_BUTTON_LEFT)
 			{
 				int pos = (cursor_block.y + camera_y)*4 + cursor_block.x + camera_x;
-				cursor_block.type = (pos < 23) ? pos : UNKNOWN;
+				if(pos < 23) cursor_block.type = pos;
 			}
 		}
 
