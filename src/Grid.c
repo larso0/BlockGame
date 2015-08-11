@@ -23,20 +23,12 @@ struct _Grid
 
 bool PointLessThan(int ax, int ay, int bx, int by)
 {
-    if ( ax < bx )
-        return true;
-    if ( bx < ax )
-        return false;
-    if ( ay < by )
-        return true;
-    if ( by < ay )
-        return false;
-    return false;
+	return (ax < bx) ? true : ((ax == bx) ? (ay < by) : false);
 }
 
 bool PointEquals(int ax, int ay, int bx, int by)
 {
-    return ax == bx && ay == by;
+    return (ax == bx) && (ay == by);
 }
 
 GridNode* CreateGridNode(Block* block)
@@ -76,6 +68,7 @@ void DestroyGridRec(GridNode* root)
 void DestroyGrid(Grid* grid)
 {
     DestroyGridRec(grid->root);
+    free(grid);
 }
 
 void AddBlockRec(GridNode* root, Block* block)
@@ -101,48 +94,56 @@ void AddBlock(Grid* grid, Block* block)
     }
 }
 
-GridNode* RemoveBlockRec(GridNode* root, int x, int y)
+GridNode* RemoveBlockRec(GridNode* n, int x, int y)
 {
-    if(root)
-    {
-        if(PointEquals(x, y, root->block.x, root->block.y))
-        {
-            if(root->left == NULL)
-            {
-                GridNode* tmp = root->right;
-                free(root);
-                return tmp;
-            }
-            else if(root->right == NULL)
-            {
-                GridNode* tmp = root->left;
-                free(root);
-                return tmp;
-            }
-            GridNode* tmp = root;
-            while(tmp->left) tmp = tmp->left;
-            root->block.x = tmp->block.x;
-            root->block.y = tmp->block.y;
-            root->block.type = tmp->block.type;
-            root->right = RemoveBlockRec(root->right, tmp->block.x, tmp->block.y);
-        }
-        else if(PointLessThan(x, y, root->block.x, root->block.y))
-        {
-            root->left = RemoveBlockRec(root->left, x, y);
-        }
-        else
-        {
-            root->right = RemoveBlockRec(root->right, x, y);
-        }
-    }
-    return root;
+	if(n == NULL) return NULL;
+	if(PointEquals(x, y, n->block.x, n->block.y))
+	{
+		if(! (n->left || n->right))
+		{
+			free(n);
+			return NULL;
+		}
+		else if(! n->left)
+		{
+			GridNode* tmp = n->right;
+			free(n);
+			return tmp;
+		}
+		else if(! n->right)
+		{
+			GridNode* tmp = n->left;
+			free(n);
+			return tmp;
+		}
+		else
+		{
+			GridNode* tmp = n->right;
+			while(tmp->left) tmp = tmp->left;
+			n->block.type = tmp->block.type;
+			n->block.x = tmp->block.x;
+			n->block.y = tmp->block.y;
+			n->right = RemoveBlockRec(n->right, tmp->block.x, tmp->block.y);
+			return n;
+		}
+	}
+	else if(PointLessThan(x, y, n->block.x, n->block.y))
+	{
+		n->left = RemoveBlockRec(n->left, x, y);
+		return n;
+	}
+	else
+	{
+		n->right = RemoveBlockRec(n->right, x, y);
+		return n;
+	}
 }
 
 void RemoveBlock(Grid* grid, int x, int y)
 {
     if(grid)
     {
-        grid->root = RemoveBlockRec(grid->root, x, y);
+    	grid->root = RemoveBlockRec(grid->root, x, y);
     }
 }
 

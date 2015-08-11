@@ -50,6 +50,11 @@ int main(int argc, char** argv)
 
     ForEachBlock(grid, &PrintBlock, NULL);
 
+    printf("\nRemoving block at (15, -1)\n");
+    RemoveBlock(grid, 15, -1);
+
+    ForEachBlock(grid, &PrintBlock, NULL);
+
     DestroyGrid(grid);
 
     return 0;
