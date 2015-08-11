@@ -40,13 +40,18 @@ int main(int argc, char** argv)
 	InitBlockTextures(ren);
 	BlockRenderer* bren = CreateBlockRenderer(ren);
 
-	int height = 480;
 	int mouse_x, mouse_y;
+	int camera_x = 0, camera_y = 0;
 	Uint32 mouse_state;
 	SDL_Rect cursor;
 	cursor.w = cursor.h = BLOCK_SIZE;
 	Block cursor_block;
 	cursor_block.type = DIRT;
+	SDL_Rect window;
+	window.x = 4*BLOCK_SIZE + 1;
+	window.y = 0;
+	window.h = 480;
+	window.w = 640 - window.x;
 
 	int running = 1;
 	while(running)
@@ -60,7 +65,27 @@ int main(int argc, char** argv)
 				running = 0;
 				break;
 			case SDL_WINDOWEVENT:
-				SDL_GetWindowSize(win, NULL, &height);
+				SDL_GetWindowSize(win, &window.w, &window.h);
+				window.w -= window.x;
+				break;
+			case SDL_KEYDOWN:
+				switch(e.key.keysym.scancode)
+				{
+				case SDL_SCANCODE_LEFT:
+					camera_x++;
+					break;
+				case SDL_SCANCODE_RIGHT:
+					camera_x--;
+					break;
+				case SDL_SCANCODE_UP:
+					camera_y++;
+					break;
+				case SDL_SCANCODE_DOWN:
+					camera_y--;
+					break;
+				default:
+					break;
+				}
 				break;
 			default:
 				break;
@@ -76,6 +101,8 @@ int main(int argc, char** argv)
 						 mouse_x / BLOCK_SIZE :
 						 (mouse_x - 4*BLOCK_SIZE - 1) / BLOCK_SIZE;
 		cursor_block.y = mouse_y / BLOCK_SIZE;
+		cursor_block.x -= camera_x;
+		cursor_block.y -= camera_y;
 
 		if(mouse_x > 4*BLOCK_SIZE + 1)
 		{
@@ -94,7 +121,7 @@ int main(int argc, char** argv)
 		{
 			if(mouse_state == SDL_BUTTON_LEFT)
 			{
-				int pos = cursor_block.y*4 + cursor_block.x;
+				int pos = (cursor_block.y + camera_y)*4 + cursor_block.x + camera_x;
 				cursor_block.type = (pos < 23) ? pos : UNKNOWN;
 			}
 		}
@@ -102,9 +129,11 @@ int main(int argc, char** argv)
 		SDL_SetRenderDrawColor(ren, 127, 127, 127, 255);
 		SDL_RenderClear(ren);
 		SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
-		SDL_RenderDrawLine(ren, 4*BLOCK_SIZE, 0, 4*BLOCK_SIZE, height - 1);
+		SDL_RenderDrawLine(ren, 4*BLOCK_SIZE, 0, 4*BLOCK_SIZE, window.h - 1);
 
-		SetPixelOrigin(bren, 0, 0);
+		SetBlockOrigin(bren, 0, 0);
+		SetOrigin(bren, 0, 0);
+		SetWindow(bren, NULL);
 		int i = 0;
 		Block block;
 		for(; i < 22; i++)
@@ -115,7 +144,9 @@ int main(int argc, char** argv)
 			RenderBlock(bren, &block);
 		}
 
-		SetPixelOrigin(bren, 4*BLOCK_SIZE + 1, 0);
+		SetBlockOrigin(bren, camera_x, camera_y);
+		SetOrigin(bren, 4*BLOCK_SIZE + 1, 0);
+		SetWindow(bren, &window);
 		RenderBlocks(bren, world);
 
 		if(mouse_x > 4*BLOCK_SIZE + 1)
