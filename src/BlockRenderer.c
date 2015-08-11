@@ -96,8 +96,10 @@ void CleanBlockTextures()
 struct _BlockRenderer
 {
 	SDL_Renderer* ren;
-	int block_x, block_y;
-	int pixel_x, pixel_y;
+	SDL_Rect* window;
+	SDL_Rect* block_window;
+	SDL_Point origin;
+	SDL_Point block_origin;
 };
 
 BlockRenderer* CreateBlockRenderer(SDL_Renderer* ren)
@@ -106,10 +108,12 @@ BlockRenderer* CreateBlockRenderer(SDL_Renderer* ren)
 	if(bren)
 	{
 		bren->ren = ren;
-		bren->block_x = 0;
-		bren->block_y = 0;
-		bren->pixel_x = 0;
-		bren->pixel_y = 0;
+		bren->window = NULL;
+		bren->block_window = NULL;
+		bren->origin.x = 0;
+		bren->origin.y = 0;
+		bren->block_origin.x = 0;
+		bren->block_origin.y = 0;
 	}
 	return bren;
 }
@@ -123,29 +127,81 @@ void SetBlockOrigin(BlockRenderer* bren, int x, int y)
 {
 	if(bren)
 	{
-		bren->block_x = x;
-		bren->block_y = y;
+		bren->block_origin.x = x;
+		bren->block_origin.y = y;
 	}
 }
 
-void SetPixelOrigin(BlockRenderer* bren, int x ,int y)
+void SetOrigin(BlockRenderer* bren, int x ,int y)
 {
 	if(bren)
 	{
-		bren->pixel_x = x;
-		bren->pixel_y = y;
+		bren->origin.x = x;
+		bren->origin.y = y;
 	}
+}
+
+void SetBlockWindow(BlockRenderer* bren, SDL_Rect* window)
+{
+	if(bren) bren->block_window = window;
+}
+
+void SetWindow(BlockRenderer* bren, SDL_Rect* window)
+{
+	if(bren) bren->window = window;
 }
 
 void RenderBlock(BlockRenderer* bren, Block* block)
 {
 	if(bren && block)
 	{
-		SDL_Rect pos;
-		pos.w = pos.h = BLOCK_SIZE;
-		pos.x = (bren->block_x + block->x)*BLOCK_SIZE + bren->pixel_x;
-		pos.y = (bren->block_y + block->y)*BLOCK_SIZE + bren->pixel_y;
-		SDL_RenderCopy(bren->ren, textures[block->type], NULL, &pos);
+		SDL_Rect srcrect, dstrect;
+		dstrect.w = dstrect.h = BLOCK_SIZE;
+		dstrect.x = block->x + bren->block_origin.x;
+		dstrect.y = block->y + bren->block_origin.y;
+		if(bren->block_window && (
+		   dstrect.x < bren->block_window->x ||
+		   dstrect.x >= bren->block_window->x + bren->block_window->w ||
+		   dstrect.y < bren->block_window->y ||
+		   dstrect.y >= bren->block_window->y + bren->block_window->h))
+		{
+			return;
+		}
+		dstrect.x = dstrect.x*BLOCK_SIZE + bren->origin.x;
+		dstrect.y = dstrect.y*BLOCK_SIZE + bren->origin.y;
+
+		srcrect.x = srcrect.y = 0;
+		srcrect.w = srcrect.h = BLOCK_SIZE;
+
+		if(bren->window)
+		{
+			int tmp = bren->window->x + bren->window->w;
+			if(dstrect.x < bren->window->x)
+			{
+				srcrect.x = bren->window->x - dstrect.x;
+				srcrect.w -= srcrect.x;
+				if(srcrect.w < 1) return;
+			}
+			else if(dstrect.x > tmp - BLOCK_SIZE)
+			{
+				srcrect.w -= tmp - dstrect.x;
+				if(srcrect.w < 1) return;
+			}
+
+			tmp = bren->window->y + bren->window->h;
+			if(dstrect.y < bren->window->y)
+			{
+				srcrect.y = bren->window->y - dstrect.y;
+				srcrect.h -= srcrect.y;
+				if(srcrect.h < 1) return;
+			}
+			else if(dstrect.y > tmp - BLOCK_SIZE)
+			{
+				srcrect.h -= tmp - dstrect.y;
+				if(srcrect.h < 1) return;
+			}
+		}
+		SDL_RenderCopy(bren->ren, textures[block->type], &srcrect, &dstrect);
 	}
 }
 
