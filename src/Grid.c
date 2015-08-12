@@ -78,7 +78,11 @@ void AddBlockRec(GridNode* root, Block* block)
         if(root->left) AddBlockRec(root->left, block);
         else root->left = CreateGridNode(block);
     }
-    else if(!PointEquals(block->x, block->y, root->block.x, root->block.y))
+    else if(PointEquals(block->x, block->y, root->block.x, root->block.y))
+    {
+    	root->block.type = block->type;
+    }
+    else
     {
         if(root->right) AddBlockRec(root->right, block);
         else root->right = CreateGridNode(block);
