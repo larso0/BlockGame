@@ -96,8 +96,10 @@ void CleanBlockTextures()
 struct _BlockRenderer
 {
 	SDL_Renderer* ren;
-	SDL_Rect* window;
-	SDL_Rect* block_window;
+	SDL_Rect window;
+	char window_enable;
+	SDL_Rect block_window;
+	char block_window_enable;
 	SDL_Point origin;
 	SDL_Point block_origin;
 };
@@ -108,8 +110,8 @@ BlockRenderer* CreateBlockRenderer(SDL_Renderer* ren)
 	if(bren)
 	{
 		bren->ren = ren;
-		bren->window = NULL;
-		bren->block_window = NULL;
+		bren->window_enable = 0;
+		bren->block_window_enable = 0;
 		bren->origin.x = 0;
 		bren->origin.y = 0;
 		bren->block_origin.x = 0;
@@ -132,6 +134,15 @@ void SetBlockOrigin(BlockRenderer* bren, int x, int y)
 	}
 }
 
+void GetBlockOrigin(BlockRenderer* bren, SDL_Point* dst)
+{
+	if(bren && dst)
+	{
+		dst->x = bren->block_origin.x;
+		dst->y = bren->block_origin.y;
+	}
+}
+
 void SetOrigin(BlockRenderer* bren, int x ,int y)
 {
 	if(bren)
@@ -141,14 +152,73 @@ void SetOrigin(BlockRenderer* bren, int x ,int y)
 	}
 }
 
+void GetOrigin(BlockRenderer* bren, SDL_Point* dst)
+{
+	if(bren && dst)
+	{
+		dst->x = bren->origin.x;
+		dst->y = bren->origin.y;
+	}
+}
+
 void SetBlockWindow(BlockRenderer* bren, SDL_Rect* window)
 {
-	if(bren) bren->block_window = window;
+	if(bren)
+	{
+		if(window)
+		{
+			bren->block_window.x = window->x;
+			bren->block_window.y = window->y;
+			bren->block_window.w = window->w;
+			bren->block_window.h = window->h;
+			bren->block_window_enable = 1;
+		}
+		else
+		{
+			bren->block_window_enable = 0;
+		}
+	}
+}
+
+void GetBlockWindow(BlockRenderer* bren, SDL_Rect* dst)
+{
+	if(bren && dst)
+	{
+		dst->x = bren->block_window.x;
+		dst->y = bren->block_window.y;
+		dst->w = bren->block_window.w;
+		dst->h = bren->block_window.h;
+	}
 }
 
 void SetWindow(BlockRenderer* bren, SDL_Rect* window)
 {
-	if(bren) bren->window = window;
+	if(bren)
+	{
+		if(window)
+		{
+			bren->window.x = window->x;
+			bren->window.y = window->y;
+			bren->window.w = window->w;
+			bren->window.h = window->h;
+			bren->window_enable = 1;
+		}
+		else
+		{
+			bren->window_enable = 0;
+		}
+	}
+}
+
+void GetWindow(BlockRenderer* bren, SDL_Rect* dst)
+{
+	if(bren && dst)
+	{
+		dst->x = bren->window.x;
+		dst->y = bren->window.y;
+		dst->w = bren->window.w;
+		dst->h = bren->window.h;
+	}
 }
 
 void RenderBlock(BlockRenderer* bren, Block* block)
@@ -159,11 +229,11 @@ void RenderBlock(BlockRenderer* bren, Block* block)
 		dstrect.w = dstrect.h = BLOCK_SIZE;
 		dstrect.x = block->x + bren->block_origin.x;
 		dstrect.y = block->y + bren->block_origin.y;
-		if(bren->block_window && (
-		   dstrect.x < bren->block_window->x ||
-		   dstrect.x >= bren->block_window->x + bren->block_window->w ||
-		   dstrect.y < bren->block_window->y ||
-		   dstrect.y >= bren->block_window->y + bren->block_window->h))
+		if(bren->block_window_enable && (
+		   dstrect.x < bren->block_window.x ||
+		   dstrect.x >= bren->block_window.x + bren->block_window.w ||
+		   dstrect.y < bren->block_window.y ||
+		   dstrect.y >= bren->block_window.y + bren->block_window.h))
 		{
 			return;
 		}
@@ -173,12 +243,12 @@ void RenderBlock(BlockRenderer* bren, Block* block)
 		srcrect.x = srcrect.y = 0;
 		srcrect.w = srcrect.h = BLOCK_SIZE;
 
-		if(bren->window)
+		if(bren->window_enable)
 		{
-			int tmp = bren->window->x + bren->window->w;
-			if(dstrect.x < bren->window->x)
+			int tmp = bren->window.x + bren->window.w;
+			if(dstrect.x < bren->window.x)
 			{
-				srcrect.x = bren->window->x - dstrect.x;
+				srcrect.x = bren->window.x - dstrect.x;
 				srcrect.w -= srcrect.x;
 				if(srcrect.w < 1) return;
 			}
@@ -188,10 +258,10 @@ void RenderBlock(BlockRenderer* bren, Block* block)
 				if(srcrect.w < 1) return;
 			}
 
-			tmp = bren->window->y + bren->window->h;
-			if(dstrect.y < bren->window->y)
+			tmp = bren->window.y + bren->window.h;
+			if(dstrect.y < bren->window.y)
 			{
-				srcrect.y = bren->window->y - dstrect.y;
+				srcrect.y = bren->window.y - dstrect.y;
 				srcrect.h -= srcrect.y;
 				if(srcrect.h < 1) return;
 			}

@@ -24,10 +24,14 @@ BlockRenderer* CreateBlockRenderer(SDL_Renderer* ren);
 void DestroyBlockRenderer(BlockRenderer* bren);
 
 void SetBlockOrigin(BlockRenderer* bren, int x, int y);
+void GetBlockOrigin(BlockRenderer* bren, SDL_Point* dst);
 void SetOrigin(BlockRenderer* bren, int x ,int y);
+void GetOrigin(BlockRenderer* bren, SDL_Point* dst);
 
 void SetBlockWindow(BlockRenderer* bren, SDL_Rect* window);
+void GetBlockWindow(BlockRenderer* bren, SDL_Rect* dst);
 void SetWindow(BlockRenderer* bren, SDL_Rect* window);
+void GetWindow(BlockRenderer* bren, SDL_Rect* dst);
 
 void RenderBlock(BlockRenderer* bren, Block* block);
 void RenderBlocks(BlockRenderer* bren, Grid* blocks);
