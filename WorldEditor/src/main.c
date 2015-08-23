@@ -36,6 +36,11 @@ int main(int argc, char** argv)
 	SDL_ShowCursor(SDL_DISABLE);
 
 	Grid* world = CreateGrid();
+	if(argc > 1)
+	{
+		FILE* file = fopen(argv[1], "r");
+		LoadGrid(world, file);
+	}
 
 	InitBlockTextures(ren);
 	BlockRenderer* bren = CreateBlockRenderer(ren);
@@ -160,6 +165,13 @@ int main(int argc, char** argv)
 
 	DestroyBlockRenderer(bren);
 	CleanBlockTextures();
+
+	if(argc > 1)
+	{
+		FILE* file = fopen(argv[1], "w");
+		SaveGrid(world, file);
+	}
+
 	DestroyGrid(world);
 	SDL_DestroyRenderer(ren);
 	SDL_DestroyWindow(win);
