@@ -9,6 +9,7 @@
 #define GRID_H_
 
 #include "Block.h"
+#include <stdio.h>
 
 struct _Grid;
 
@@ -22,5 +23,8 @@ void RemoveBlock(Grid* grid, int x, int y);
 Block* GetBlock(Grid* grid, int x, int y);
 
 void ForEachBlock(Grid* grid, void (*f)(Block*, void*), void* data);
+
+int LoadGrid(Grid* dst, FILE* file);
+int SaveGrid(Grid* src, FILE* file);
 
 #endif /* GRID_H_ */

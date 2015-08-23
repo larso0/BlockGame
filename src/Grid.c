@@ -194,3 +194,90 @@ void ForEachBlock(Grid* grid, void (*f)(Block*, void*), void* data)
         ForEachBlockRec(grid->root, f, data);
     }
 }
+
+
+int LoadGrid(Grid* dst, FILE* file)
+{
+	if(!dst)
+	{
+		fprintf(stderr, "Destination grid is NULL.\n");
+		return -1;
+	}
+	if(!file)
+	{
+		fprintf(stderr, "File pointer is NULL.\n");
+		return -2;
+	}
+	int ret = 0;
+	char c;
+	int tmp = fscanf(file, "%c", &c);
+	while(tmp != EOF)
+	{
+		if(c == ':')
+		{
+			Block block;
+			tmp = fscanf(file, "%d %d %d\n", &block.x, &block.y, (int*)&block.type);
+			if(tmp < 3)
+			{
+				fprintf(stderr, "Wrong file format. Need x, y and block type.\n");
+				return -3;
+			}
+			if(block.type < UNKNOWN || block.type > LEAVES)
+			{
+				fprintf(stderr, "Warning: Skipping block with type that doesn't exist.\n");
+				ret = 1;
+			}
+			else
+			{
+				AddBlock(dst, &block);
+			}
+		}
+		else if(c == '.')
+		{
+			fscanf(file, "\n");
+			break;
+		}
+		else
+		{
+			fprintf(stderr, "Wrong file format. Use ':' before each block and '.' when done.\n");
+			return -3;
+		}
+		tmp = fscanf(file, "%c", &c);
+	}
+	return ret;
+}
+
+void SaveBlock(Block* block, void* data)
+{
+	struct { int ret; FILE* file; }* dat = data;
+	int tmp = fprintf(dat->file, ":%d %d %d\n", block->x, block->y, block->type);
+	if(tmp < 7)
+    {
+		fprintf(stderr, "Error saving block to file.\n");
+		dat->ret = -1;
+    }
+}
+
+int SaveGrid(Grid* src, FILE* file)
+{
+	if(!src)
+	{
+		fprintf(stderr, "Source grid is NULL.\n");
+		return -1;
+	}
+	if(!file)
+	{
+		fprintf(stderr, "File pointer is NULL.\n");
+		return -2;
+	}
+	struct { int ret; FILE* file; } data;
+	data.ret = 0; data.file = file;
+	ForEachBlock(src, &SaveBlock, (void*)&data);
+	int tmp = fprintf(file, ".\n");
+	if(tmp < 2)
+	{
+		fprintf(stderr, "Error saving grid to file.\n");
+		data.ret = -2;
+	}
+	return data.ret;
+}
